@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/components/ui/use-toast';
-import { cn, refreshSchedule } from '@/helpers';
+import { cn, GET, refreshSchedule, request } from '@/helpers';
 import type { NewSchedule } from '@/schemas/schedule.schema';
 import { useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import IconGoogleCalendar from '../../../../public/google-calendar-svgrepo-com';
 import IconLeft from '../../../../public/Left.Icon';
 import IconRight from '../../../../public/Right.Icon';
 import Calendar from './Calendar';
@@ -18,6 +19,7 @@ const Schedule = () => {
 	const router = useRouter();
 	const [events, setEvents] = useState<NewSchedule[]>([]);
 	const [period, setPeriod] = useState('month');
+	const [userHasGoogleAuth, setUserHasGoogleAuth] = useState(false);
 
 	const { toast } = useToast();
 	const handlRequestResponse = useCallback(
@@ -26,6 +28,10 @@ const Schedule = () => {
 	);
 
 	useEffect(() => {
+		const fetchGoogleAuth = async () => {
+			const res = await request('user/google/access_token', GET());
+			if (res.success) setUserHasGoogleAuth(true);
+		};
 		const fetchSchedules = async () => {
 			try {
 				const data: NewSchedule[] = await refreshSchedule();
@@ -34,6 +40,7 @@ const Schedule = () => {
 				handlRequestResponse('Erro', error.message);
 			}
 		};
+		fetchGoogleAuth();
 		fetchSchedules();
 	}, [handlRequestResponse, router]);
 
@@ -61,6 +68,18 @@ const Schedule = () => {
 		setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7));
 	const handleNextWeek = () =>
 		setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7));
+
+	const handleGoogleAuth = () => {
+		const handleGoogleAuth = async () => {
+			const clientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+			const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI_LOCAL;
+			const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.app.created');
+			const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
+			window.location.href = authUrl;
+		};
+
+		handleGoogleAuth();
+	};
 
 	return (
 		<>
@@ -113,6 +132,11 @@ const Schedule = () => {
 							<SelectItem value="month">Mês</SelectItem>
 						</SelectContent>
 					</Select>
+					{!userHasGoogleAuth && (
+						<Button variant={'outline'} size={'sm'} onClick={handleGoogleAuth} className="flex items-center gap-2">
+							<IconGoogleCalendar className="h-8 w-8" />
+						</Button>
+					)}
 					<Suspense fallback={<div>Carregando...</div>}>
 						<Register toast={handlRequestResponse} />
 					</Suspense>
