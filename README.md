@@ -1,6 +1,6 @@
 # Google Calendar Integration Frontend
 
-Uma aplicação web para integração entre um sistema de agendamento local e o Google Calendar, permitindo a visualização e gerenciamento de eventos em diferentes formatos (mensal, semanal e diário).
+Uma aplicação web para integração entre um sistema de agendamento e o Google Calendar, permitindo a visualização e gerenciamento de eventos em diferentes formatos (mensal, semanal e diário).
 
 ## Funcionalidades
 
