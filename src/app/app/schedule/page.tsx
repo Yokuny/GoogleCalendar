@@ -44,6 +44,18 @@ const Schedule = () => {
 		fetchSchedules();
 	}, [handlRequestResponse, router]);
 
+	const handleGoogleAuth = () => {
+		const handleGoogleAuth = async () => {
+			const clientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+			const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI_LOCAL;
+			const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.app.created');
+			const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
+			window.location.href = authUrl;
+		};
+
+		handleGoogleAuth();
+	};
+
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const monthNames = [
 		'Janeiro',
@@ -68,18 +80,6 @@ const Schedule = () => {
 		setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7));
 	const handleNextWeek = () =>
 		setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7));
-
-	const handleGoogleAuth = () => {
-		const handleGoogleAuth = async () => {
-			const clientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-			const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI_LOCAL;
-			const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.app.created');
-			const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
-			window.location.href = authUrl;
-		};
-
-		handleGoogleAuth();
-	};
 
 	return (
 		<>
@@ -133,8 +133,9 @@ const Schedule = () => {
 						</SelectContent>
 					</Select>
 					{!userHasGoogleAuth && (
-						<Button variant={'outline'} size={'sm'} onClick={handleGoogleAuth} className="flex items-center gap-2">
+						<Button variant={'outline'} size={'sm'} onClick={handleGoogleAuth} className="flex gap-1 px-2">
 							<IconGoogleCalendar className="h-8 w-8" />
+							<span className="">Conectar</span>
 						</Button>
 					)}
 					<Suspense fallback={<div>Carregando...</div>}>
